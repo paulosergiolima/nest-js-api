@@ -1,16 +1,19 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { PrismaService } from '../src/prisma/prisma.service';
+//import { PrismaService } from '../src/prisma/prisma.service';
 import { AppModule } from '../src/app.module'
 import * as pactum from 'pactum'
-import { AuthDto } from 'src/auth/dto';
-import { EditUserDto } from 'src/user/dto';
-import { CreateBookmarkDto } from 'src/bookmark/dto';
+import { AuthDto } from '../src/auth/dto';
+import { EditUserDto } from '../src/user/dto';
+import { CreateBookmarkDto } from '../src/bookmark/dto';
 import { link } from 'fs';
+import { Connection } from 'typeorm';
+import { AppDataSource } from '../src/data-source';
 describe('App e2e', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  //let prisma: PrismaService;
   beforeAll(async () => {
+    //AppDataSource.initialize()
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -22,9 +25,10 @@ describe('App e2e', () => {
     )
     await app.init;
     await app.listen(3333)
-    prisma = app.get(PrismaService)
+    //prisma = app.get(PrismaService)
 
-    await prisma.clearDb();
+    //deletes everything from the database
+    await AppDataSource.synchronize(true)
 
     pactum.request.setBaseUrl('http://localhost:3333/')
   })

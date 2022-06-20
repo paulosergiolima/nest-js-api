@@ -20,6 +20,9 @@ export class Bookmark {
     @Column()
     link: string
 
-    @ManyToOne(() => User, (user) => user.bookmarks)
+    @ManyToOne(() => User, (user) => user.bookmarks, {
+        onDelete: "CASCADE",
+        cascade: true,
+    })
     userId: number
 }

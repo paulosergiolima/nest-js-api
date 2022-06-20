@@ -24,8 +24,9 @@ export class User {
     @Column({nullable: true})
     lastName: string
 
-
-    @OneToMany(() => Bookmark, (bookmark) => bookmark.userId)
+    @OneToMany(() => Bookmark, (bookmark) => bookmark.userId, {
+        onDelete: "CASCADE"
+    })
     bookmarks: Bookmark[]
 
 }

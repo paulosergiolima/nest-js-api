@@ -12,6 +12,10 @@ export class UserService {
     constructor() {}
 
     async editUser(userId: number, dto: EditUserDto) {
+        //user returned to the client
+        const userV = await userRepository.findOneBy({
+            id:userId,
+        })
         const user = await userRepository.update(userId,{...dto})
         //     where: {
         //         id: userId,
@@ -22,8 +26,8 @@ export class UserService {
         //     }
             
         // });
-        //delete user.hash;
+        delete userV.hash;
 
-        return user;
+        return userV;
     }
 }
