@@ -49,6 +49,7 @@ export class AuthService {
         const hash = await argon.hash(dto.password)
         try {
             const user = userRepository.create(dto);
+            userRepository.save(user)
             return this.signToken(user.id, user.email)
     
             //return {msg: "cool man"}

@@ -21,5 +21,5 @@ export class Bookmark {
     link: string
 
     @ManyToOne(() => User, (user) => user.bookmarks)
-    userId: User
+    userId: number
 }
