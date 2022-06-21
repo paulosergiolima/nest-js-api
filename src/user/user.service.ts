@@ -9,25 +9,31 @@ const userRepository = AppDataSource.getRepository(User)
 
 @Injectable()
 export class UserService {
-    constructor() {}
+    constructor() { }
 
     async editUser(userId: number, dto: EditUserDto) {
         //user returned to the client
-        const userV = await userRepository.findOneBy({
-            id:userId,
+        const userV = await userRepository.findOneByOrFail({
+            id: userId,
         })
-        const user = await userRepository.update(userId,{...dto})
-        //     where: {
-        //         id: userId,
 
-        //     },
-        //     data: {
-        //         ...dto,
-        //     }
+        if (userV) {
+            const user = await userRepository.update(userId, { ...dto })
+            //     where: {
+            //         id: userId,
+
+            //     },
+            //     data: {
+            //         ...dto,
+            //     }
+
+            // });
+            delete userV.hash;
+
+            return userV;
+        }else {
             
-        // });
-        delete userV.hash;
+        }
 
-        return userV;
     }
 }

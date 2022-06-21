@@ -8,17 +8,22 @@ import { User } from "../../entity/User";
 const userRepository = AppDataSource.getRepository(User)
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-    constructor(config: ConfigService, ) {
+    constructor(config: ConfigService,) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             secretOrKey: config.get('JWT_SECRET'),
         });
     }
-    async validate(payload: {sub: number, email: string}) {
-        const user = await userRepository.findOneBy({
-            id: payload.sub,
+    async validate(payload: { sub: number, email: string }) {
+        const user = await userRepository.findOneByOrFail({
+            id:payload.sub,
         })
-        delete user.hash;
-        return user;
+        if (user) {
+            delete user.hash;
+            return user;
+        }else {
+
+        }
+
     }
 }

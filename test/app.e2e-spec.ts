@@ -28,11 +28,12 @@ describe('App e2e', () => {
     //prisma = app.get(PrismaService)
 
     //deletes everything from the database
-    await AppDataSource.synchronize(true)
+    
 
     pactum.request.setBaseUrl('http://localhost:3333/')
   })
-  afterAll(() => {
+  afterAll(async () => {
+    //await AppDataSource.synchronize(true)
     app.close();
   })
   describe('Auth', () => {

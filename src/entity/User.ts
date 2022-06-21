@@ -3,7 +3,7 @@ import { Bookmark } from "./Bookmark"
 @Entity()
 export class User {
 
-    @PrimaryGeneratedColumn("increment")
+    @PrimaryGeneratedColumn('increment')
     id: number
 
     @CreateDateColumn()

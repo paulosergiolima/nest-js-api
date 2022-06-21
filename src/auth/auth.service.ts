@@ -8,7 +8,7 @@ import { ConfigService } from "@nestjs/config";
 import { AppDataSource } from "../data-source"
 import { User } from "../entity/User";
 import { Bookmark } from "../entity/Bookmark";
-import { MetadataAlreadyExistsError } from "typeorm";
+import { MetadataAlreadyExistsError, QueryFailedError } from "typeorm";
 
 const userRepository = AppDataSource.getRepository(User)
 const bookmarkRepository = AppDataSource.getRepository(Bookmark)
@@ -24,7 +24,7 @@ export class AuthService {
     }
     async login(dto: AuthDto) {
         //find the user by email
-        const user = await userRepository.findOneBy({
+        const user = await userRepository.findOneByOrFail({
             email: dto.email
         })
         // if !user trow exception
@@ -48,18 +48,26 @@ export class AuthService {
         //generate the password hash
         const hash = await argon.hash(dto.password)
         try {
-            const user = userRepository.create({
-                email: dto.email,
-                hash: hash,
-            });
-            userRepository.save(user)
-            return this.signToken(user.id, user.email)
+            const userAlready = await userRepository.findOneBy({
+                email: dto.email
+            })
+
+            if(!userAlready) {
+                const user = userRepository.create({
+                    email: dto.email,
+                    hash: hash,
+                });
+                userRepository.save(user)
+                return this.signToken(user.id, user.email)
+            }else {
+                throw new ForbiddenException('Credentials taken')
+            }
     
             //return {msg: "cool man"}
         }catch(err) {
-            if (err instanceof MetadataAlreadyExistsError) {
+            
                 throw new ForbiddenException('Credentials taken')
-            }
+            
         }
         // save the new user in the db
         
