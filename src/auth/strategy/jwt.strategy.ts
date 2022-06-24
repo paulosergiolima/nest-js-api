@@ -15,15 +15,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         });
     }
     async validate(payload: { sub: number, email: string }) {
-        const user = await userRepository.findOneByOrFail({
-            id:payload.sub,
+        //console.log(payload.sub)
+        const user = await userRepository.findOne({
+            where: {
+                id: payload.sub,
+            }
         })
-        if (user) {
-            delete user.hash;
-            return user;
-        }else {
+        delete user.hash;
+        return user;
 
-        }
 
     }
 }
