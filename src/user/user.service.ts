@@ -28,11 +28,12 @@ export class UserService {
             //     }
 
             // });
-            delete userV.hash;
-
-            return userV;
+            const returnUser = await userRepository.findOneBy({id:userId})
+            delete returnUser.hash
+            console.log(returnUser)
+            return returnUser;
         }else {
-            
+            //return Error("There's no person logged in")
         }
 
     }

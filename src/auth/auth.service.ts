@@ -57,9 +57,6 @@ export class AuthService {
             user.email = dto.email
             user.hash = hash
             await userRepository.save(user)
-            const findMe =  await userRepository.findOneBy({
-                email: dto.email
-            })
             console.log(user)
             const token = await this.signToken(user.id, user.email)
             return token
