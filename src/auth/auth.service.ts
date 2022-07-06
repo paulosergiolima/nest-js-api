@@ -24,7 +24,7 @@ export class AuthService {
     }
     async login(dto: AuthDto) {
         //find the user by email
-        const user = await userRepository.findOneByOrFail({
+        const user = await userRepository.findOneBy({
             email: dto.email
         })
         // if !user trow exception
@@ -57,9 +57,8 @@ export class AuthService {
             user.email = dto.email
             user.hash = hash
             await userRepository.save(user)
-            console.log(user)
             const token = await this.signToken(user.id, user.email)
-            return token
+            return await {userId: user.id, acess_token: token.access_token}
         } else {
             throw new ForbiddenException('Credentials taken')
         }
@@ -78,7 +77,7 @@ export class AuthService {
         //console.log(payload.sub)
         const secret = this.config.get('JWT_SECRET')
         const token = await this.jwt.signAsync(payload, {
-            expiresIn: '15min',
+            expiresIn: '10h',
             secret: secret,
         })
         return {

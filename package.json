@@ -10,10 +10,6 @@
       "db:dev:up": "docker compose up dev-db -d && sleep 5",
       "db:dev:watch": "docker compose logs dev-db -f",
       "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up",
-      "db:test:rm": "docker compose rm test-db -s -f -v",
-      "db:test:up": "docker compose up test-db -d && sleep 5",
-      "db:test:watch": "docker compose logs test-db -f",
-      "db:test:restart": "npm run db:test:rm && npm run db:test:up",
       "prebuild": "rimraf dist",
       "build": "nest build",
       "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -26,8 +22,8 @@
       "test:watch": "jest --watch",
       "test:cov": "jest --coverage",
       "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-      "test:e2e": "dotenv -e .env.test -- jest  --watch --no-cache --config ./test/jest-e2e.json",
-      "pretest:e2e": "npm run db:test:restart",
+      "test:e2e": "jest  --watch --no-cache --config ./test/jest-e2e.json",
+      "pretest:e2e": "npm run db:dev:restart",
       "typeorm": "typeorm-ts-node-commonjs"
    },
    "dependencies": {

@@ -13,7 +13,6 @@ export class AuthController {
         console.log({
             dto,
     })
-        console.log("entre1")
         return this.authService.signup(dto);
     }
     @HttpCode(HttpStatus.OK)

@@ -21,8 +21,9 @@ export class Bookmark {
     link: string
 
     @ManyToOne(() => User, (user) => user.bookmarks, {
+        eager: true,
         onDelete: "CASCADE",
         cascade: true,
     })
-    userId: number
+    userId: User
 }
