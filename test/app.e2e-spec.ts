@@ -1,19 +1,16 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-//import { PrismaService } from '../src/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from '../src/app.module'
-import * as pactum from 'pactum'
 import { AuthDto } from '../src/auth/dto';
 import { CreateBookmarkDto } from '../src/bookmark/dto';
 import { AppDataSource } from '../src/data-source';
 import { User } from '../src/entity/User';
-import { Bookmark } from '../src/entity/Bookmark';
-
 import { AuthService } from '../src/auth/auth.service'
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { BookmarkService } from '../src/bookmark/bookmark.service'
 import { EditUserDto } from '../src/user/dto';
+import * as pactum from 'pactum'
 
 
 let jwtService: JwtService = new JwtService({ secret: "super-secret" })
@@ -24,9 +21,14 @@ const dto: AuthDto = {
   password: '123456'
 }
 
+const bookmark_dto: CreateBookmarkDto = {
+  title: 'First bookmark',
+  link: 'https://youtube.com/shorts/ZYDfAPrEXwg'
+}
+
 async function create_user() {
   //AppDataSource.getRepository(User).delete([1, 2])
- 
+
 
   let authService: AuthService = new AuthService(jwtService, configService)
 
@@ -76,14 +78,14 @@ describe('App e2e', () => {
     await AppDataSource.getRepository(User).delete({
       email: 'vlad@codewithvlad.com'
     })
-    
+
   })
 
   afterAll(async () => {
     //await AppDataSource.synchronize(true)
     app.close();
   })
-  
+
   describe('Auth', () => {
     it('should trow error if email empty', () => {
       return pactum
@@ -149,8 +151,8 @@ describe('App e2e', () => {
           .expectStatus(400)
       })
 
-      it('should signin', () => {
-        const user = create_user()
+      it('should signin and return acess key', async () => {
+        const user = await create_user()
         return pactum
           .spec()
           .post('auth/signin')
@@ -159,7 +161,7 @@ describe('App e2e', () => {
       })
     })
   });
-  
+
   //Related to user module
   describe('User', () => {
     describe('Get current user', () => {
@@ -180,29 +182,29 @@ describe('App e2e', () => {
     })
 
     describe('Edit user', () => {
-      it('should edit user', async () => {
-        const dto: EditUserDto = {
+      it('should change the firstName and email of an row in the user database', async () => {
+        const edit_dto: EditUserDto = {
           firstName: "Vladmir",
           email: "vlad@codewithvlad.com"
         }
         const user = await create_user()
-        return  pactum
+        return pactum
           .spec()
           .patch('users')
           .withHeaders(user.authorization)
-          .withBody(dto)
+          .withBody(edit_dto)
           .expectStatus(200)
-          .expectBodyContains(dto.firstName)
-          .expectBodyContains(dto.email)
+          .expectBodyContains(edit_dto.firstName)
+          .expectBodyContains(edit_dto.email)
       })
     })
   })
 
-  
+
   describe('Bookmark', () => {
 
     describe('Get empty bookmarks', () => {
-      it('should get bookmarks', async () => {
+      it("should get an empty array, since there's no bookmarks", async () => {
         const user = await create_user()
         return pactum
           .spec()
@@ -215,24 +217,21 @@ describe('App e2e', () => {
 
 
     describe('Create bookmarks', () => {
-      const dto: CreateBookmarkDto = {
-        title: 'First bookmark',
-        link: 'https://youtube.com/shorts/ZYDfAPrEXwg'
-      }
-      it('should create bookmarks', async () => {
+
+      it('should create a single bookmark and return 201 return code', async () => {
         const user = await create_user()
         return pactum
           .spec()
           .post('bookmarks')
           .withHeaders(user.authorization)
-          .withBody(dto)
+          .withBody(bookmark_dto)
           .expectStatus(201)
       })
     })
 
 
     describe('Get bookmarks', () => {
-      it('should get when there are bookmarks', async () => {
+      it('should get one array with a single bookmark', async () => {
         const user = await create_bookmark()
         return pactum
           .spec()
@@ -244,7 +243,7 @@ describe('App e2e', () => {
     })
 
     describe('Get bookmark by id', () => {
-      it('should get bookmark id', async () => {
+      it('should get a bookmark respective to the id given', async () => {
         const user = await create_bookmark()
         return pactum
           .spec()
@@ -254,46 +253,46 @@ describe('App e2e', () => {
           .expectBodyContains(`${user.bookmark_id}`)
       })
     })
-    
+
     describe('Edit bookmark by id', () => {
-      const dto = {
+      const edited_bookmark_dto = {
         title: "changed",
         description: "changed description"
       }
-      it('should edit bookmark by id', async () => {
+      it('should edit bookmark with the same id given', async () => {
         const user = await create_bookmark()
         return pactum
           .spec()
           .patch(`bookmarks/${user.bookmark_id}`)
           .withHeaders(user.authorization)
-          .withBody(dto)
+          .withBody(edited_bookmark_dto)
           .expectStatus(200)
-          .expectBodyContains(dto.title)
-          .expectBodyContains(dto.description)
+          .expectBodyContains(edited_bookmark_dto.title)
+          .expectBodyContains(edited_bookmark_dto.description)
           .inspect()
       })
     })
-    
+
     describe('Delete bookmark by id', () => {
-      it('should delete bookmark by id', async () => {
+      it('should delete bookmark with the same id given', async () => {
         const user = await create_bookmark()
         return pactum
-        .spec()
-        .delete(`bookmarks/${user.bookmark_id}`)
-        .withHeaders(user.authorization)
-        .expectStatus(204)
+          .spec()
+          .delete(`bookmarks/${user.bookmark_id}`)
+          .withHeaders(user.authorization)
+          .expectStatus(204)
       })
       it('should get an empty bookmark list', async () => {
         const user = await create_user()
         return pactum
-        .spec()
-        .get('bookmarks')
-        .withHeaders(user.authorization)
-        .expectStatus(200)
-        .expectJsonLength(0)
-        .inspect();
+          .spec()
+          .get('bookmarks')
+          .withHeaders(user.authorization)
+          .expectStatus(200)
+          .expectJsonLength(0)
+          .inspect();
       })
     })
-    
+
   })
 })
